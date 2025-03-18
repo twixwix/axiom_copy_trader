@@ -17,8 +17,8 @@ If you wish to create an account on Axiom.trade, you can use my referral link:
 
 1. Clone this repository:
    ```sh
-   git clone https://github.com/calvet/axiom-copy-trader.git
-   cd axiom-copy-trader
+   git clone https://github.com/calvet/axiom_copy_trader.git
+   cd axiom_copy_trader
    ```
 
 2. Install required dependencies:
@@ -32,7 +32,7 @@ If you wish to create an account on Axiom.trade, you can use my referral link:
    RPC_URL_RAYDIUM=https://api.mainnet-beta.solana.com
    WALLET_PUBLIC_KEY=your_public_key_here
    WALLET_PRIVATE_KEY=your_private_key_here
-   TRACK_WALLETS=G3g1CKqKWSVEVURZDNMazDBv7YAhMNTjhJBVRTiKZygk
+   TRACK_WALLETS=4ugZWiyAYH7auVajf3axVykxTLsc13cx9oHCzETUjc21
    SOL_IN=0.01
    MAX_SOL_SPEND=0.1
    MAX_SLIPPAGE=35
