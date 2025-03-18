@@ -41,10 +41,19 @@ If you wish to create an account on Axiom.trade, you can use my referral link:
    DEBUG=false
    ```
 
-   - `TRACK_WALLETS` can include multiple wallets, separated by `|` (e.g., `wallet1|wallet2|wallet3`).
-   - `SOL_IN` is the fixed amount of SOL to use for each buy order.
-   - `ALLOW_REBUY` defines whether the bot is allowed to rebuy the same token.
-   - `MAX_BUY_ATTEMPTS` is the maximum number of times the bot will retry a failed buy transaction before giving up.
+### Environment Variables Explanation
+
+- **RPC_URL_PUMP_FUN**: The RPC URL used for transactions on Pump.fun.
+- **RPC_URL_RAYDIUM**: The RPC URL used for transactions on Raydium.
+- **WALLET_PUBLIC_KEY**: Your Solana wallet public key.
+- **WALLET_PRIVATE_KEY**: Your private key in **Base58 format** (can be extracted from Phantom Wallet - [Guide](https://help.phantom.com/hc/en-us/articles/28355165637011-Exporting-Your-Private-Key)).
+- **TRACK_WALLETS**: Wallets to track for copy trading. Multiple wallets can be separated using `|` (e.g., `wallet1|wallet2|wallet3`).
+- **SOL_IN**: The fixed amount of SOL to use for each buy order.
+- **MAX_SOL_SPEND**: The maximum amount of SOL that can be spent while the bot is running. If set to `0`, there is no limit.
+- **MAX_SLIPPAGE**: The maximum slippage allowed for transactions before they fail.
+- **ALLOW_REBUY**: Defines whether the bot is allowed to rebuy the same token (`true` or `false`).
+- **MAX_BUY_ATTEMPTS**: The maximum number of times the bot will retry a failed buy transaction before giving up.
+- **DEBUG**: If set to `true`, it enables detailed logs, including packet logs from WebSockets, for debugging purposes.
 
 4. Obtain your authentication token:
    You can obtain the authentication token by opening the Axiom.trade website in Google Chrome, going to the **Network** tab in Developer Tools (F12 or Ctrl+Shift+I), and finding the first request that returns the token.
