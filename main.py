@@ -22,9 +22,10 @@ track_wallets = os.getenv('TRACK_WALLETS')
 max_slippage = int(os.getenv('MAX_SLIPPAGE'))
 sol_in = float(os.getenv('SOL_IN'))
 max_sol_spend = float(os.getenv('MAX_SOL_SPEND'))
-allow_rebuy = bool(os.getenv('ALLOW_REBUY'))
+allow_rebuy = False if os.getenv('ALLOW_REBUY') == 'false' else True
 max_buy_attempts = int(os.getenv('MAX_BUY_ATTEMPTS'))
-debug = bool(os.getenv('DEBUG'))
+debug = False if os.getenv('DEBUG') == 'false' else True
+
 
 # temp variables
 buy_list = []
@@ -410,7 +411,7 @@ async def connect():
                     if spent >= max_sol_spend:
                         print(f'[{datetime.now()}] Already spent {spent}! Max: {max_sol_spend}')
 
-                        return
+                        continue
 
                     if filtered_message:
                         transaction_type = filtered_message['transaction_type']
@@ -421,7 +422,7 @@ async def connect():
                         pair_address = filtered_message['pair_address']
 
                         if maker_address not in track_wallets:
-                            return
+                            continue
 
                         protocol_map = {
                             'Pump V1': {
@@ -439,7 +440,7 @@ async def connect():
                         if not perform_action:
                             print(f'[{datetime.now()}] Not supported {transaction_type.upper()}: {protocol}! "{token_name}" : {token_address}')
 
-                            return
+                            continue
 
                         await perform_action()
         except websockets.exceptions.ConnectionClosedError as e:
