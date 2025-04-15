@@ -10,6 +10,8 @@ from pump_fun_py.pump_fun import buy as buy_pump_fun
 from pump_fun_py.pump_fun import sell as sell_pump_fun
 from raydium_py.raydium.amm_v4 import buy as buy_raydium
 from raydium_py.raydium.amm_v4 import sell as sell_raydium
+from discord_bot import send_notification, run_bot
+import threading
 
 
 load_dotenv()
@@ -263,65 +265,38 @@ def extract_transaction_details(data: str):
 
 async def buy_token(dex, name, address, sol_inn, sslippage):
     global spent
-
-    attempts = 0
-
-    while True:
-        try:
-            await asyncio.sleep(.5)
-
-            if not allow_rebuy:
-                if address in buy_list:
-                    print(f'[{datetime.now()}] Already bought [{dex.upper()}] "{name}" [{attempts}]!')
-
-                    break
-
-            if attempts > max_buy_attempts:
-                print(f'[{datetime.now()}] Already attempted to buy[{dex.upper()}] "{name}" [{attempts}]!')
-
-                break
-
-            attempts += 1
-
-            print(f'[{datetime.now()}] Trying to buy[{dex.upper()}] "{name}" [{attempts}]..')
-
-            buy_list.append(address)
-
-            if dex == 'ra':
-                buy = buy_pump_fun(address, sol_inn, sslippage)
-            else:
-                buy = buy_pump_fun(address, sol_inn, sslippage)
-
-            if buy:
-                spent += sol_inn
-
-                print(f'[{datetime.now()}] Bought[{dex.upper()}] "{name}" [{attempts}]!')
-
-                break
-        except:
-            print(f'[{datetime.now()}] FAILED to buy[{dex.upper()}] "{name}" [{attempts}]!')
+    try:
+        if dex == 'pump_fun':
+            result = await buy_pump_fun(address, sol_inn, sslippage)
+        else:
+            result = await buy_raydium(address, sol_inn, sslippage)
+        
+        if result:
+            spent += sol_inn
+            notification = f"🟢 Kauf erfolgreich!\nToken: {name}\nDEX: {dex}\nAdresse: {address}\nSOL: {sol_inn}"
+            await send_notification(notification)
+        return result
+    except Exception as e:
+        error_msg = f"❌ Kauffehler bei {name} ({dex}): {str(e)}"
+        await send_notification(error_msg)
+        return False
 
 
 async def sell_token(dex, name, address, sslippage):
-    attempts = 0
-
-    while True:
-        try:
-            await asyncio.sleep(.5)
-
-            print(f'[{datetime.now()}] Trying to sell[{dex.upper()}] "{name}" [{attempts}]..')
-
-            if dex == 'ra':
-                sell = sell_raydium(address, 100, sslippage)
-            else:
-                sell = sell_pump_fun(address, 100, sslippage)
-
-            if sell is None or sell:
-                break
-
-            attempts += 1
-        except:
-            print(f'[{datetime.now()}] FAILED to sell[{dex.upper()}] "{name}" [{attempts}]! Trying again..')
+    try:
+        if dex == 'pump_fun':
+            result = await sell_pump_fun(address, sslippage)
+        else:
+            result = await sell_raydium(address, sslippage)
+        
+        if result:
+            notification = f"🔴 Verkauf erfolgreich!\nToken: {name}\nDEX: {dex}\nAdresse: {address}"
+            await send_notification(notification)
+        return result
+    except Exception as e:
+        error_msg = f"❌ Verkaufsfehler bei {name} ({dex}): {str(e)}"
+        await send_notification(error_msg)
+        return False
 
 
 async def send_ping(ws):
@@ -455,7 +430,23 @@ async def connect():
             break
 
 
+async def main():
+    # Starte Discord Bot in einem separaten Thread
+    bot_thread = threading.Thread(target=run_bot)
+    bot_thread.daemon = True
+    bot_thread.start()
+    
+    # Warte kurz, damit der Bot starten kann
+    await asyncio.sleep(2)
+    
+    # Sende Startbenachrichtigung
+    await send_notification("🚀 Bot wurde gestartet und überwacht jetzt die Aktivitäten!")
+    
+    # Führe den Rest des Codes aus
+    await connect()
+
+
 if __name__ == '__main__':
     refresh_access_token()
 
-    asyncio.run(connect())
+    asyncio.run(main())
