@@ -39,6 +39,10 @@ If you wish to create an account on Axiom.trade, you can use my referral link:
    ALLOW_REBUY=false
    MAX_BUY_ATTEMPTS=1
    DEBUG=false
+   
+   # Discord Bot Konfiguration
+   DISCORD_TOKEN=your_discord_bot_token_here
+   DISCORD_CHANNEL_ID=your_channel_id_here
    ```
 
 ### Environment Variables Explanation
@@ -54,6 +58,8 @@ If you wish to create an account on Axiom.trade, you can use my referral link:
 - **ALLOW_REBUY**: Defines whether the bot is allowed to rebuy the same token (`true` or `false`).
 - **MAX_BUY_ATTEMPTS**: The maximum number of times the bot will retry a failed buy transaction before giving up.
 - **DEBUG**: If set to `true`, it enables detailed logs, including packet logs from WebSockets, for debugging purposes.
+- **DISCORD_TOKEN**: Your Discord Bot Token (see Discord Bot Setup section).
+- **DISCORD_CHANNEL_ID**: The ID of the Discord channel where notifications will be sent.
 
 4. Obtain your authentication token:
    You can obtain the authentication token by opening the Axiom.trade website in Google Chrome, going to the **Network** tab in Developer Tools (F12 or Ctrl+Shift+I), and finding the first request that returns the token.
@@ -62,6 +68,26 @@ If you wish to create an account on Axiom.trade, you can use my referral link:
    ```
    auth-refresh-token=your_refresh_token_here; auth-access-token=your_access_token_here;
    ```
+
+## Discord Bot Setup
+
+1. Create a Discord Bot:
+   - Go to the [Discord Developer Portal](https://discord.com/developers/applications)
+   - Click "New Application" and give it a name
+   - Go to the "Bot" tab and click "Add Bot"
+   - Under the bot settings, enable "Message Content Intent"
+   - Copy the bot token and add it to your `.env` file as `DISCORD_TOKEN`
+
+2. Invite the Bot to Your Server:
+   - Go to the "OAuth2" tab in the Developer Portal
+   - Select "bot" under "Scopes"
+   - Select the permissions you want to give the bot (at minimum: "Send Messages", "Read Message History")
+   - Copy the generated URL and open it in your browser to invite the bot to your server
+
+3. Get the Channel ID:
+   - Enable Developer Mode in Discord (User Settings > Advanced > Developer Mode)
+   - Right-click on the channel where you want to receive notifications and select "Copy ID"
+   - Add this ID to your `.env` file as `DISCORD_CHANNEL_ID`
 
 ## Enabling Raydium Buy Transactions (Experimental)
 
@@ -73,10 +99,49 @@ By default, buy transactions for tokens on Raydium are **disabled** because they
 
 ## Usage
 
+### Local Development
+
 Run the bot with:
 ```sh
 python main.py
 ```
+
+### Running as a Service on Linux VPS
+
+1. Transfer all project files to your VPS.
+
+2. Make the installation script executable:
+   ```sh
+   chmod +x install_service.sh
+   ```
+
+3. Run the installation script as root:
+   ```sh
+   sudo ./install_service.sh
+   ```
+
+4. The script will:
+   - Configure the service with your current user and directory
+   - Install the service to start automatically on boot
+   - Start the service immediately
+
+5. Useful service management commands:
+   ```sh
+   # Check service status
+   sudo systemctl status axiom_trade_bot.service
+   
+   # Stop the service
+   sudo systemctl stop axiom_trade_bot.service
+   
+   # Start the service
+   sudo systemctl start axiom_trade_bot.service
+   
+   # Restart the service
+   sudo systemctl restart axiom_trade_bot.service
+   
+   # View logs
+   sudo journalctl -u axiom_trade_bot.service
+   ```
 
 ## Credits
 

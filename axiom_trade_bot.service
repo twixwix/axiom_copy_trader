@@ -1,0 +1,17 @@
+[Unit]
+Description=Axiom Trade Bot Service
+After=network.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+WorkingDirectory=/path/to/your/project
+ExecStart=/usr/bin/python3 /path/to/your/project/main.py
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=axiom_trade_bot
+
+[Install]
+WantedBy=multi-user.target 
