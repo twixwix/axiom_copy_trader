@@ -43,6 +43,12 @@ If you wish to create an account on Axiom.trade, you can use my referral link:
    # Discord Bot Konfiguration
    DISCORD_TOKEN=your_discord_bot_token_here
    DISCORD_CHANNEL_ID=your_channel_id_here
+   DISCORD_NOTIFICATIONS=true
+   
+   # Telegram Bot Konfiguration
+   TELEGRAM_TOKEN=your_telegram_bot_token_here
+   TELEGRAM_CHAT_ID=your_chat_id_here
+   TELEGRAM_NOTIFICATIONS=false
    ```
 
 ### Environment Variables Explanation
@@ -60,6 +66,10 @@ If you wish to create an account on Axiom.trade, you can use my referral link:
 - **DEBUG**: If set to `true`, it enables detailed logs, including packet logs from WebSockets, for debugging purposes.
 - **DISCORD_TOKEN**: Your Discord Bot Token (see Discord Bot Setup section).
 - **DISCORD_CHANNEL_ID**: The ID of the Discord channel where notifications will be sent.
+- **DISCORD_NOTIFICATIONS**: Set to `true` to enable Discord notifications, `false` to disable them.
+- **TELEGRAM_TOKEN**: Your Telegram Bot Token (see Telegram Bot Setup section).
+- **TELEGRAM_CHAT_ID**: Your Telegram Chat ID where notifications will be sent.
+- **TELEGRAM_NOTIFICATIONS**: Set to `true` to enable Telegram notifications, `false` to disable them.
 
 4. Obtain your authentication token:
    You can obtain the authentication token by opening the Axiom.trade website in Google Chrome, going to the **Network** tab in Developer Tools (F12 or Ctrl+Shift+I), and finding the first request that returns the token.
@@ -88,6 +98,35 @@ If you wish to create an account on Axiom.trade, you can use my referral link:
    - Enable Developer Mode in Discord (User Settings > Advanced > Developer Mode)
    - Right-click on the channel where you want to receive notifications and select "Copy ID"
    - Add this ID to your `.env` file as `DISCORD_CHANNEL_ID`
+
+## Telegram Bot Setup
+
+1. Create a Telegram Bot:
+   - Open Telegram and search for [@BotFather](https://t.me/BotFather)
+   - Start a chat with BotFather and send the command `/newbot`
+   - Follow the instructions to create your bot
+   - BotFather will give you a token - add this to your `.env` file as `TELEGRAM_TOKEN`
+
+2. Get Your Chat ID:
+   - Start a chat with your new bot
+   - Send a message to the bot
+   - Open this URL in your browser (replace `YOUR_BOT_TOKEN` with your actual token):
+     ```
+     https://api.telegram.org/botYOUR_BOT_TOKEN/getUpdates
+     ```
+   - Look for the "chat" object in the response and find the "id" field
+   - Add this ID to your `.env` file as `TELEGRAM_CHAT_ID`
+
+3. Enable Telegram Notifications:
+   - Set `TELEGRAM_NOTIFICATIONS=true` in your `.env` file
+
+## Notification Configuration
+
+You can choose to use Discord, Telegram, or both for notifications:
+
+- **Discord Only**: Set `DISCORD_NOTIFICATIONS=true` and `TELEGRAM_NOTIFICATIONS=false`
+- **Telegram Only**: Set `DISCORD_NOTIFICATIONS=false` and `TELEGRAM_NOTIFICATIONS=true`
+- **Both**: Set both to `true`
 
 ## Enabling Raydium Buy Transactions (Experimental)
 

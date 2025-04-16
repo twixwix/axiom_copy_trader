@@ -10,7 +10,8 @@ from pump_fun_py.pump_fun import buy as buy_pump_fun
 from pump_fun_py.pump_fun import sell as sell_pump_fun
 from raydium_py.raydium.amm_v4 import buy as buy_raydium
 from raydium_py.raydium.amm_v4 import sell as sell_raydium
-from discord_bot import send_notification, run_bot
+from discord_bot import run_bot
+from notification_manager import initialize as initialize_notifications, send_notification
 import threading
 
 
@@ -431,13 +432,17 @@ async def connect():
 
 
 async def main():
-    # Starte Discord Bot in einem separaten Thread
-    bot_thread = threading.Thread(target=run_bot)
-    bot_thread.daemon = True
-    bot_thread.start()
+    # Initialisiere Benachrichtigungsdienste
+    await initialize_notifications()
     
-    # Warte kurz, damit der Bot starten kann
-    await asyncio.sleep(2)
+    # Starte Discord Bot in einem separaten Thread, wenn aktiviert
+    if os.getenv('DISCORD_NOTIFICATIONS', 'false').lower() == 'true':
+        bot_thread = threading.Thread(target=run_bot)
+        bot_thread.daemon = True
+        bot_thread.start()
+        
+        # Warte kurz, damit der Bot starten kann
+        await asyncio.sleep(2)
     
     # Sende Startbenachrichtigung
     await send_notification("🚀 Bot wurde gestartet und überwacht jetzt die Aktivitäten!")
