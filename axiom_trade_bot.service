@@ -9,9 +9,12 @@ WorkingDirectory=/path/to/your/project
 ExecStart=/usr/bin/python3 /path/to/your/project/main.py
 Restart=always
 RestartSec=10
-StandardOutput=syslog
-StandardError=syslog
+StandardOutput=append:/path/to/your/project/logs/service_output.log
+StandardError=append:/path/to/your/project/logs/service_error.log
 SyslogIdentifier=axiom_trade_bot
+
+# Umgebungsvariablen
+Environment=PYTHONUNBUFFERED=1
 
 [Install]
 WantedBy=multi-user.target 

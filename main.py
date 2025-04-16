@@ -12,6 +12,7 @@ from raydium_py.raydium.amm_v4 import buy as buy_raydium
 from raydium_py.raydium.amm_v4 import sell as sell_raydium
 from discord_bot import run_bot
 from notification_manager import initialize as initialize_notifications, send_notification
+from log_manager import log_info, log_error, log_warning, log_debug, cleanup_old_logs
 import threading
 
 
@@ -70,7 +71,7 @@ def load_initial_payload():
 
 def refresh_access_token():
     try:
-        print(f'[{datetime.now()}] Refreshing access token..')
+        log_info('Refreshing access token..')
 
         headers = {
             'accept': 'application/json, text/plain, */*',
@@ -98,15 +99,15 @@ def refresh_access_token():
         )
 
         if response.status_code != 200:
-            print(f'[{datetime.now()}] Could not refresh access token!')
+            log_error('Could not refresh access token!')
 
-            print('-' * 100)
+            log_error('-' * 100)
 
-            print(response.text)
+            log_error(response.text)
 
-            print('-' * 100)
+            log_error('-' * 100)
 
-            print(f'[{datetime.now()}] Closing application...')
+            log_error('Closing application...')
 
             exit()
 
@@ -136,17 +137,17 @@ def refresh_access_token():
         if not write_cookie(new_cookie):
             raise Exception('Could not write cookie!')
 
-        print(f'[{datetime.now()}] Access token refreshed!')
+        log_info('Access token refreshed!')
     except Exception as e:
-        print(f'[{datetime.now()}] Could not refresh access token!')
+        log_error('Could not refresh access token!')
 
-        print('-' * 100)
+        log_error('-' * 100)
 
-        print(e)
+        log_error(str(e))
 
-        print('-' * 100)
+        log_error('-' * 100)
 
-        print(f'[{datetime.now()}] Closing application...')
+        log_error('Closing application...')
 
         exit()
 
@@ -276,10 +277,12 @@ async def buy_token(dex, name, address, sol_inn, sslippage):
             spent += sol_inn
             notification = f"🟢 Kauf erfolgreich!\nToken: {name}\nDEX: {dex}\nAdresse: {address}\nSOL: {sol_inn}"
             await send_notification(notification)
+            log_info(f"Kauf erfolgreich: {name} ({dex}) - {sol_inn} SOL")
         return result
     except Exception as e:
         error_msg = f"❌ Kauffehler bei {name} ({dex}): {str(e)}"
         await send_notification(error_msg)
+        log_error(f"Kauffehler bei {name} ({dex}): {str(e)}")
         return False
 
 
@@ -293,10 +296,12 @@ async def sell_token(dex, name, address, sslippage):
         if result:
             notification = f"🔴 Verkauf erfolgreich!\nToken: {name}\nDEX: {dex}\nAdresse: {address}"
             await send_notification(notification)
+            log_info(f"Verkauf erfolgreich: {name} ({dex})")
         return result
     except Exception as e:
         error_msg = f"❌ Verkaufsfehler bei {name} ({dex}): {str(e)}"
         await send_notification(error_msg)
+        log_error(f"Verkaufsfehler bei {name} ({dex}): {str(e)}")
         return False
 
 
@@ -305,14 +310,14 @@ async def send_ping(ws):
         await asyncio.sleep(25)
 
         if debug:
-            print('Sending PING..')
+            log_debug('Sending PING..')
 
         ping_payload = '{"method": "ping"}'
 
         await ws.send(ping_payload)
 
         if debug:
-            print('Sent', ping_payload)
+            log_debug('Sent ' + ping_payload)
 
 
 async def get_current_balance():
@@ -327,7 +332,7 @@ async def get_current_balance():
             start_balance = gett
 
             if diff != 0.0:
-                print(f'[{datetime.now()}] Balance: {start_balance} | Diff: {format(diff, ".9f")}')
+                log_info(f'Balance: {start_balance} | Diff: {format(diff, ".9f")}')
 
         await asyncio.sleep(5)
 
@@ -363,18 +368,18 @@ async def connect():
                 'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits'
             }
 
-            print(f'[{datetime.now()}] Connecting..')
+            log_info('Connecting..')
 
             async with websockets.connect('wss://cluster2.axiom.trade?', extra_headers=headers) as ws:
-                print(f'[{datetime.now()}] Connected! Sending payload...')
+                log_info('Connected! Sending payload...')
 
                 for payload in load_initial_payload():
                     await ws.send(payload)
 
                     if debug:
-                        print('Sent', payload)
+                        log_debug('Sent ' + payload)
 
-                print(f'[{datetime.now()}] Payload sent!')
+                log_info('Payload sent!')
 
                 asyncio.create_task(send_ping(ws))
                 asyncio.create_task(get_current_balance())
@@ -385,7 +390,7 @@ async def connect():
                     filtered_message = filter_messages(response)
 
                     if spent >= max_sol_spend:
-                        print(f'[{datetime.now()}] Already spent {spent}! Max: {max_sol_spend}')
+                        log_warning(f'Already spent {spent}! Max: {max_sol_spend}')
 
                         continue
 
@@ -414,24 +419,27 @@ async def connect():
                         perform_action = protocol_map.get(protocol, {}).get(transaction_type)
 
                         if not perform_action:
-                            print(f'[{datetime.now()}] Not supported {transaction_type.upper()}: {protocol}! "{token_name}" : {token_address}')
+                            log_warning(f'Not supported {transaction_type.upper()}: {protocol}! "{token_name}" : {token_address}')
 
                             continue
 
                         await perform_action()
         except websockets.exceptions.ConnectionClosedError as e:
-            print(f'[{datetime.now()}] Connection closed: {e}. Trying to reconnect in 5 seconds...')
+            log_error(f'Connection closed: {e}. Trying to reconnect in 5 seconds...')
 
             refresh_access_token()
 
             await asyncio.sleep(5)
         except Exception as e:
-            print(f'[{datetime.now()}] Error: {e}!')
+            log_error(f'Error: {e}!')
 
             break
 
 
 async def main():
+    # Bereinige alte Logs
+    cleanup_old_logs()
+    
     # Initialisiere Benachrichtigungsdienste
     await initialize_notifications()
     
@@ -446,6 +454,7 @@ async def main():
     
     # Sende Startbenachrichtigung
     await send_notification("🚀 Bot wurde gestartet und überwacht jetzt die Aktivitäten!")
+    log_info("Bot wurde gestartet und überwacht jetzt die Aktivitäten!")
     
     # Führe den Rest des Codes aus
     await connect()
